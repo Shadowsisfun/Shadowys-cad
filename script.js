@@ -1,113 +1,121 @@
-// Script for CAD system
+// Ensure Firestore is initialized
+const db = firebase.firestore();
 
-// Firestore references
-initializeApp(firebaseConfig);
-const callsRef = db.collection('calls');
+/** UNITS MANAGEMENT **/
+// Reference to the 'units' collection
 const unitsRef = db.collection('units');
 
-// Load active calls
-function loadActiveCalls() {
-    callsRef.onSnapshot((snapshot) => {
-        const callsDiv = document.getElementById('active-calls');
-        const callsTable = document.getElementById('calls-table');
-        callsDiv.innerHTML = '';
-        callsTable.innerHTML = `
-            <tr>
-                <th>Call ID</th>
-                <th>Description</th>
-                <th>Status</th>
-            </tr>`;
-        snapshot.forEach((doc) => {
-            const call = doc.data();
-            callsDiv.innerHTML += `
-                <div class="card">
-                    <h3>${call.callID}</h3>
-                    <p>${call.description}</p>
-                    <p>Status: ${call.status}</p>
-                </div>`;
-            callsTable.innerHTML += `
-                <tr>
-                    <td>${call.callID}</td>
-                    <td>${call.description}</td>
-                    <td>${call.status}</td>
-                </tr>`;
-        });
+// Function to add a new unit
+document.getElementById('add-unit-form').addEventListener('submit', function(e) {
+    e.preventDefault();
+    const unitName = document.getElementById('unitName').value;
+    const unitType = document.getElementById('unitType').value;
+
+    unitsRef.add({
+        unitName,
+        unitType,
+        status: 'available',
+        location: new firebase.firestore.GeoPoint(0, 0),
+        assignedCallID: null
+    }).then(() => {
+        alert('Unit added successfully!');
+    }).catch((error) => {
+        console.error('Error adding unit:', error);
     });
-}
-
-// Load available units
-function loadAvailableUnits() {
-    unitsRef.onSnapshot((snapshot) => {
-        const unitsTable = document.getElementById('units-table');
-        unitsTable.innerHTML = `
-            <tr>
-                <th>Unit ID</th>
-                <th>Status</th>
-                <th>Location</th>
-            </tr>`;
-        snapshot.forEach((doc) => {
-            const unit = doc.data();
-            unitsTable.innerHTML += `
-                <tr>
-                    <td>${unit.unitID}</td>
-                    <td>${unit.status}</td>
-                    <td>${unit.location}</td>
-                </tr>`;
-        });
-    });
-}
-
-// Create new call
-function createNewCall() {
-    const callID = prompt("Enter Call ID:");
-    const description = prompt("Enter Call Description:");
-    const status = "Pending";
-    
-    if (callID && description) {
-        callsRef.add({
-            callID: callID,
-            description: description,
-            status: status,
-            timestamp: firebase.firestore.FieldValue.serverTimestamp()
-        }).then(() => {
-            alert("Call created successfully!");
-        }).catch((error) => {
-            console.error("Error creating call: ", error);
-        });
-    }
-}
-
-// Add new unit
-function addNewUnit() {
-    const unitID = prompt("Enter Unit ID:");
-    const status = "Available";
-    const location = prompt("Enter Unit Location:");
-    
-    if (unitID && location) {
-        unitsRef.add({
-            unitID: unitID,
-            status: status,
-            location: location,
-            timestamp: firebase.firestore.FieldValue.serverTimestamp()
-        }).then(() => {
-            alert("Unit added successfully!");
-        }).catch((error) => {
-            console.error("Error adding unit: ", error);
-        });
-    }
-}
-
-// Handle Dark Mode toggle
-document.getElementById('dark-mode').addEventListener('change', function() {
-    if (this.checked) {
-        document.body.style.backgroundColor = '#121212';
-        document.body.style.color = '#e0e0e0';
-    } else {
-        document.body.style.backgroundColor = '#ffffff';
-        document.body.style.color = '#000000';
-    }
 });
 
-// Initial load of data
-if (document.getElementById('active-calls')) loadActiveCalls();
-if (document.getElementById('units-table')) loadAvailableUnits();
+// Function to list units
+function listUnits() {
+    unitsRef.get().then((snapshot) => {
+        const unitsList = document.getElementById('units-list');
+        unitsList.innerHTML = ''; // Clear existing list
+        snapshot.forEach((doc) => {
+            const unit = doc.data();
+            unitsList.innerHTML += `<div>${unit.unitName} (${unit.unitType}) - ${unit.status}</div>`;
+        });
+    });
+}
+
+// Call the function to list units on page load
+if (document.getElementById('units-list')) {
+    listUnits();
+}
+
+/** CALLS MANAGEMENT **/
+const callsRef = db.collection('calls');
+
+// Function to add a new call
+document.getElementById('add-call-form').addEventListener('submit', function(e) {
+    e.preventDefault();
+    const description = document.getElementById('description').value;
+    const location = document.getElementById('location').value.split(',').map(Number);
+
+    callsRef.add({
+        description,
+        location: new firebase.firestore.GeoPoint(location[0], location[1]),
+        status: 'pending',
+        assignedUnits: [],
+        timestamp: firebase.firestore.Timestamp.now()
+    }).then(() => {
+        alert('Call added successfully!');
+    }).catch((error) => {
+        console.error('Error adding call:', error);
+    });
+});
+
+// Function to list calls
+function listCalls() {
+    callsRef.get().then((snapshot) => {
+        const callsList = document.getElementById('calls-list');
+        callsList.innerHTML = ''; // Clear existing list
+        snapshot.forEach((doc) => {
+            const call = doc.data();
+            callsList.innerHTML += `<div>${call.description} - ${call.status}</div>`;
+        });
+    });
+}
+
+// Call the function to list calls on page load
+if (document.getElementById('calls-list')) {
+    listCalls();
+}
+
+/** LOGS MANAGEMENT **/
+const logsRef = db.collection('logs');
+
+// Function to list logs
+function listLogs() {
+    logsRef.get().then((snapshot) => {
+        const logsList = document.getElementById('logs-list');
+        logsList.innerHTML = ''; // Clear existing list
+        snapshot.forEach((doc) => {
+            const log = doc.data();
+            logsList.innerHTML += `<div>${log.timestamp.toDate()} - ${log.action}</div>`;
+        });
+    });
+}
+
+// Call the function to list logs on page load
+if (document.getElementById('logs-list')) {
+    listLogs();
+}
+
+/** USER SETTINGS **/
+const usersRef = db.collection('users');
+
+// Function to update user profile
+document.getElementById('update-profile-form').addEventListener('submit', function(e) {
+    e.preventDefault();
+    const userId = firebase.auth().currentUser.uid; // Assuming user is authenticated
+    const username = document.getElementById('username').value;
+    const bio = document.getElementById('bio').value;
+
+    usersRef.doc(userId).set({
+        username,
+        bio,
+    }, { merge: true }).then(() => {
+        alert('Profile updated successfully!');
+    }).catch((error) => {
+        console.error('Error updating profile:', error);
+    });
+});
