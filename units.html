@@ -3,36 +3,22 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Units</title>
+    <title>Manage Units</title>
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-    <header>
-        <h1>Units Management</h1>
-        <nav>
-            <a href="index.html">Dashboard</a>
-            <a href="dispatch.html">Dispatch</a>
-            <a href="calls.html">Active Calls</a>
-            <a href="settings.html">Settings</a>
-        </nav>
-    </header>
-    <div class="container">
-        <div class="card">
-            <h2>Available Units</h2>
-            <table class="table" id="units-table">
-                <tr>
-                    <th>Unit ID</th>
-                    <th>Status</th>
-                    <th>Location</th>
-                </tr>
-                <!-- Units will be populated here from Firestore -->
-            </table>
-            <button class="button" onclick="addNewUnit()">Add New Unit</button>
-        </div>
-    </div>
-    <footer>
-        <p>&copy; 2024 CAD System</p>
-    </footer>
+    <h1>Units Management</h1>
+    <div id="units-list"></div>
+
+    <h2>Add New Unit</h2>
+    <form id="add-unit-form">
+        <input type="text" id="unitName" placeholder="Unit Name" required>
+        <input type="text" id="unitType" placeholder="Unit Type (e.g., police)" required>
+        <button type="submit">Add Unit</button>
+    </form>
+
+    <script src="https://www.gstatic.com/firebasejs/9.14.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.14.0/firebase-firestore.js"></script>
     <script src="firebase-config.js"></script>
     <script src="script.js"></script>
 </body>
