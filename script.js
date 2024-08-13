@@ -1,6 +1,7 @@
 // Script for CAD system
 
 // Firestore references
+initializeApp(firebaseConfig);
 const callsRef = db.collection('calls');
 const unitsRef = db.collection('units');
 
