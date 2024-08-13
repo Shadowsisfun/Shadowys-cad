@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dispatch</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <header>
+        <h1>Dispatch Interface</h1>
+        <nav>
+            <a href="index.html">Dashboard</a>
+            <a href="units.html">Units</a>
+            <a href="calls.html">Active Calls</a>
+            <a href="settings.html">Settings</a>
+        </nav>
+    </header>
+    <div class="container">
+        <div class="card">
+            <h2>Active Calls</h2>
+            <div id="active-calls">
+                <!-- Active calls will be populated here from Firestore -->
+            </div>
+            <button class="button" onclick="createNewCall()">Create New Call</button>
+        </div>
+    </div>
+    <footer>
+        <p>&copy; 2024 CAD System</p>
+    </footer>
+    <script src="firebase-config.js"></script>
+    <script src="script.js"></script>
+</body>
+</html>
